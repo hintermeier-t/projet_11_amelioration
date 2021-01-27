@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+black = "*"
+psycopg2-binary = "*"
+django-debug-toolbar = "*"
+requests = "*"
+gunicorn = "*"
+selenium = "*"
+dj-database-url = "*"
+whitenoise = "*"
+django-heroku = "*"
+webdriver-manager = "*"
+
+[dev-packages]
+black = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

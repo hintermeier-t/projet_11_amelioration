@@ -1,0 +1,60 @@
+{%extends 'catalog/base.html' %}
+
+{% block content %}
+
+<header class="masthead">
+    <div class="container h-100">
+        <div class="row h-100 align-items-center justify-content-center text-center">
+            <div class="col-lg-12 align-self-center">
+                <h1 class="text-uppercase text-white font-weight-bold">Mentions Légales</h1>
+                <p class="text-white text-capitalize">Ce site a été développé et déployé par Thomas Hintermeier-Saive dans le cadre du Projet 8 de la formation "Développeur d'Application Python" d'Open Classrooms, et selon les critères établis dans la <a href="https://company-82435.frontify.com/d/6Yy9WFJdtp8j/pur-beurre-style-guide">charte graphique</a>.</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="page-section" id="copyrights">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+            <h2 class="text-center">Crédit photo :</h2>
+            <hr class="divider my-4" />
+            <p>
+            <ul>
+                <li><a href='https://unsplash.com/photos/eqsEZNCm4-c'>Olenka Kotyk</a></li>
+                <li><a href='https://unsplash.com/photos/k60JspcBwKE'>Kawin Harasai</a></li>
+                <li><a href="https://unsplash.com/photos/YTbFHT9_IhY">Greg Janneau</a></li>
+            </ul>
+        </p>
+        <p>
+
+        </p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="text-center">Copyright :</h2>
+                <p>
+                    Toutes les images de Colette et Rémy, les vidéo et autre éléments tirés du film d'Animation <em>Ratatouille</em> sont la propriété de Walt Disney Company et sont soumis aux droits d'auteur.
+                </p>
+                <video width="320" height="240" controls>
+                    {% load static %}
+                    <source src="{% static 'catalog/res/ratatouille-vf-bande-annonce.mp4' %}" type="video/mp4">
+                  Votre navigateur ne peut pas lire cette vidéo !
+                  </video>  
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section" id="theme">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12text-center">
+                <h2 class="mt-0">Thèmes et icônes</h2>
+                <hr class="divider my-4" />
+                <p class="text-muted mb-5">Le thème du site est basé sur le template Bootstrap disonible à <a href="https://startbootstrap.com/theme/creative">cette adresse</a>.<br>
+                Les icônes de connexion, et déconnexion sont issues de <a href="https://fontawesome.com/v4.7.0/icons/">Font Awesome</a>, tandis que l'icône de Carotte est issue de <a href="https://thenounproject.com/term/carrot/29691/">The Noun Project</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

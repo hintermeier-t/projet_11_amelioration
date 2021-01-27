@@ -1,0 +1,15 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+<section style="margin-top: 70px;">
+    <div class="row>">
+        <div class="col-lg-6 container py-5 my-5">Notre serveur débloque, on dirait (erreur 500) ! Colette va se faire un plaisir de le recadrer ! En attendant, veuillez retourner à l'accueil.
+        </div>
+        <div class="col-lg-6 container">
+            {% load static %}
+            <img src="{% static 'catalog/img/not-found.jpg' %}" alt="Colette cherche l'erreur dans son journal">
+        </div>
+    </div>
+</section>
+
+{% endblock %}

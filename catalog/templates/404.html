@@ -1,0 +1,18 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+<section style="margin-top: 70px;">
+    <div class="row>">
+        <div class="col-lg-6 container py-5 my-5">
+            OOPS ! Il semblerait que ce que vous demandez est introuvable. Veuillez retrouner à l'accueil (erreur 404) avant que Colette ne nous pique une crise ! Bon là, elle cherche ce qui a pu clocher mais... Croyez-moi c'est pas beau à voir quand elle monte sur son scooter et qu'elle zigzague dans les rues de Paris.
+        </div>
+        <div class="col-lg-6 container">
+            {% load static %}
+            <img src="{% static 'catalog/img/not-found.jpg' %}" alt="Colette cherche l'erreur dans son journal" style="max-width: 50%;">
+        </div>
+    </div>
+   
+</section>
+    
+
+{% endblock %}

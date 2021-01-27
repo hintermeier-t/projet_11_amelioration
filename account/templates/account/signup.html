@@ -1,0 +1,26 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+<div id="signup" class="container w-100">
+  <section class="signUpForm">
+<form class="form-inline" action="" method="POST">
+    {% csrf_token %}
+
+    <table>
+      {{ form.as_table }}
+    </table>
+
+    <button type="submit" class="btn btn-success">S'inscrire</button>
+  </form>
+
+  {% if errors %}
+<div>
+  {% for key, error in errors %}
+  {% autoescape off %}
+    {{ error }}
+  {% endautoescape %}
+  {% endfor %}
+</div>
+{% endif %}
+</div>
+</section>
+{% endblock %}

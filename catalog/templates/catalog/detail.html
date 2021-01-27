@@ -1,0 +1,53 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+{% load static %}
+<div id="detail">
+  <hr>
+  <h1 id="productHeader" class="intro-text text-center py-5" style="background-image: url('{{ thumbnail }}');">{{ product_name }}</h1>
+  <hr class="detail-separator">
+  <div class="row" style="margin-bottom:50px;">
+    <div style="text-align: center;" class="col-md-6">
+      <img src="{{ thumbnail }}" alt="{{ product_name }}" class="img-responsive mx-auto d-block"">
+      <div style="margin-bottom:45px">
+        <h2 class="text-center">Catégories</h2>
+        {%for category in categories%}
+          <p style="text-align: center;">{{category}}</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div style="margin-bottom:45px">
+       <h2 class="text-center">Informations</h2>
+        <ul style="list-style:none;">
+          <li><span style="font-weight:bold;">Marque:</span> {{brand}}</li>
+          <li id="nutriscore">{{nutriscore}}</li>
+          <li><span style="font-weight:bold;">Description:</span> {{ description }}</li>
+          <li><a href="{{url}}">Plus d'informations sur OpenFoodFacts</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var e = document.getElementById("nutriscore")
+switch (e.innerHTML){
+        case 'A':
+            e.innerHTML = e.innerHTML.replace('A',"<img src=\"{% static 'catalog/img/nutriscore-A.png' %}\" alt='Nutricore A'>");
+             break;
+        case 'B':
+        e.innerHTML = e.innerHTML.replace('B',"<img src=\"{% static 'catalog/img/nutriscore-B.png' %}\" alt='Nutricore B'>");
+
+             break;
+        case 'C':
+        e.innerHTML = e.innerHTML.replace('C',"<img src=\"{% static 'catalog/img/nutriscore-C.png' %}\" alt='Nutricore C'>");
+             break;
+        case 'D':
+        e.innerHTML = e.innerHTML.replace('D',"<img src=\"{% static 'catalog/img/nutriscore-D.png' %}\" alt='Nutricore D'>");
+             break;
+        default:
+          e.innerHTML = e.innerHTML.replace('E',"<img src=\"{% static 'catalog/img/nutriscore-E.png' %}\" alt='Nutricore E'>");
+          break;
+    }
+</script>
+{% endblock %}

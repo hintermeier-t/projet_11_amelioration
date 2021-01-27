@@ -1,0 +1,46 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+<div id='signin' class="container h-100">
+<div class="row w-100">
+  <div class="col-12 col-lg-4 card-back">
+    <div class="card">
+      <div class="card-body">
+        {% load static %}
+        <blockquote>Par ici la connexion !</blockquote>
+        <img class="w-100" src="{% static 'catalog/img/remy-10.jpg' %}" alt="Rémy attends !">
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4 card-back">
+    <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Connectez-vous</h5>
+          <form class="form-inline" action="" method="POST">
+            {% csrf_token %}
+            <table>
+              {{form.as_table}}
+            </table>
+            <button type="submit" class="btn btn-success">Se connecter</button>
+          </form>
+        </div>
+    </div>
+  </div>
+    <div class="col-12 col-lg-4 card-back">
+      <div class="card">
+          <div class="card-body">
+            Pour enregistrer vos produits, accéder à votre espace de compte et enregistrer votre adresse mail, il vous est nécessaire de posséder un compte. Vous n'en avez pas ? Nous n'allons pas en faire un fromage. <a href="{% url 'account:signup' %}">Créez un compte ici !</a>
+          </div>
+      </div>
+  </div>
+</div>
+{% if errors %}
+<div>
+{% for key, error in errors %}
+{% autoescape off %}
+  {{ error }}
+{% endautoescape %}
+{% endfor %}
+</div>
+{% endif %}
+</div>
+{% endblock %}

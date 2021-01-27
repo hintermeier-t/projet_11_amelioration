@@ -1,0 +1,13 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+<head class='masthead'>
+    <h1>Votre Compte :</h1>
+</head>
+<section>
+    <div class='container'>
+        <p>Nom d'Utilisateur : {{ user.username }}</p>
+        <p>Adresse Mail : {{ user.email }}</p>
+        <div id="modifier" onclick="mailModifier()">Modifier votre adresse mail.</div>
+    </div>
+</section>
+{% endblock %}
