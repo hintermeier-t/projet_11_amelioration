@@ -12,6 +12,8 @@ urlpatterns = [
     path("save/", views.save, name="save"),
     path("mail_save/", views.mail_save, name="mail_save"),
     path("delete/", views.delete, name="delete"),
+    path("activate/(<uidb64>/<token>/",
+        views.activate, name='activate')
 ]
 
 app_name = "account"

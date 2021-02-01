@@ -15,6 +15,7 @@ dj-database-url = "*"
 whitenoise = "*"
 django-heroku = "*"
 webdriver-manager = "*"
+six = "*"
 
 [dev-packages]
 black = "*"
