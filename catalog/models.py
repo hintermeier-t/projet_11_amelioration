@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+
 
 
 class Category(models.Model):
@@ -17,3 +19,10 @@ class Product(models.Model):
     categories = models.ManyToManyField(Category, related_name="Catégories", blank=True)
     picture = models.URLField()
     url = models.URLField()
+
+class Comment (models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
+    content = models.TextField("Commentaire", blank=True, null=False)
+    date = models.DateTimeField(auto_now=True)
+    validated = models.BooleanField("Validé", default=False)

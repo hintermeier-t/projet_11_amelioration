@@ -27,7 +27,22 @@
         </ul>
       </div>
     </div>
+    <div class="row" style="margin-bottom:50px;">
+      {%if user.is_authenticated %}
+      {% csrf_token %}
+      <table>
+        {{form.as_table}}
+      </table>
+      {% endif %}
+    </div>
+    <div class="row" style="margin-bottom:50px;">
+      {%for comment in comments %}
+        <div>{{comment.date}}</div>
+        <div>{{comment.content}}</div>
+      {% endfor %}
+    </div>
   </div>
+
 </div>
 <script>
   var e = document.getElementById("nutriscore")
