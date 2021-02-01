@@ -44,7 +44,7 @@ def signup(request):
     Renders signup page if not logged in, with error if invalid.
 
     """
-
+    context = {}
     if request.user.is_authenticated:
         return redirect("index")
 
@@ -52,19 +52,26 @@ def signup(request):
         form = UserCreationForm(request.POST)
 
         if form.is_valid():
-            form.save()
-            email = form.cleaned_data["email"]
-            password = form.cleaned_data["password1"]
-            user = authenticate(username=email, password=password)
-            login(request, user)
-            return redirect("index")
-
+            try:
+                with transaction.atomic():
+                    form.save()
+                    email = form.cleaned_data["email"]
+                    password = form.cleaned_data["password1"]
+                    user = authenticate(username=email, password=password)
+                    login(request, user)
+                    return redirect("index")
+            except IntegrityError:
+                form.errors['ExistingMail']= (
+                    "Un compte est déjà enregistré avec cette adresse mail."
+                    +"Merci de vous connecter")
         else:
             return render(request, "account/signup.html", {"form": form})
-
     else:
         form = UserCreationForm()
         return render(request, "account/signup.html", {"form": form})
+    context['form'] = form
+    context['errors'] = form.errors.items()
+    return render(request, "account/signup.html", context)
 
 
 def my_account(request):

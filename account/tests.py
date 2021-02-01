@@ -5,10 +5,14 @@ Testing 'Account' app views.py module
 # - Django modules
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
+from django.db.transaction import TransactionManagementError
 from django.template import RequestContext
 from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from django.urls import reverse
+
+from psycopg2.errors import UniqueViolation
 
 # - Selenium modules
 from selenium import webdriver
@@ -24,7 +28,7 @@ from catalog.models import Product
 class SigninPageTestCase(TestCase):
     """
     Testing sigin view.
-    
+
     Attributes (setUp method) :
     ---------------------------
     :self.username (string): username field used to connect and create User
@@ -105,6 +109,15 @@ class SignupPageTestCase(TestCase):
     ------
     :test_signup_form(self): request a user account creation.
     """
+    def setUp(self):
+        """
+        Tests setup
+        """
+        self.email = "nikola@sirkis.fr"
+        self.user = User.objects.create_user(
+            username=self.email,
+            password="ANosCelebrations"
+        )
 
     # - Test the account creation
     def test_signup_form(self):
@@ -136,6 +149,31 @@ class SignupPageTestCase(TestCase):
         user = User.objects.get(username="alexandre@astier.fr")
         self.assertIsNotNone(user)
 
+    def test_mail_uniqueness(self):
+        """
+        Conditions:
+        -----------
+        *Account already registered
+        *All fieldsare ok
+
+        Assertions:
+        -----------
+        *User 'nikola@sirkis.fr' already exists before account creation
+            (count = 1).
+        *Still 1 user registered (count = 1)
+        """
+        old_count = User.objects.count()
+        self.assertEqual(old_count, 1)
+        request = self.client.post(
+                reverse("account:signup"),
+                {
+                    "email": "nikola@sirkis.fr",
+                    "password1": "JAiDemandeALaLune",
+                    "password2": "JAiDemandeALaLune",
+                },
+            )
+             
+        self.assertEqual(User.objects.count(), old_count)
 
 # - Account page
 class AccountPageTestCase(TestCase):
@@ -220,7 +258,7 @@ class SignoutPageTestcase(TestCase):
         *Status code = 302 (redirection)
         *Redirect page = index (after logout)
         """
-        
+
         request = self.client.get(reverse("account:signout"))
         self.assertEqual(request.status_code, 302)
         self.assertRedirects(request, "/")
@@ -267,12 +305,9 @@ class SaveMailTestCase(TestCase):
         -----------
         *Content = "500" (no save).
         """
-        
+
         self.client.logout()
-        response = self.client.get(
-            reverse("account:mail_save"),
-            {"email": self.mail}
-            )
+        response = self.client.get(reverse("account:mail_save"), {"email": self.mail})
         self.assertEqual(response.content, b"500")
 
     # - Test the mail changing.
@@ -285,14 +320,11 @@ class SaveMailTestCase(TestCase):
         -----------
         *Content = "209" validated.
         """
-        
+
         self.client.login(username=self.username, password=self.password)
         self.assertEqual(self.user.email, "")
         self.client.login(username=self.username, password=self.password)
-        response = self.client.get(
-            reverse("account:mail_save"),
-            {"email": self.mail}
-            )
+        response = self.client.get(reverse("account:mail_save"), {"email": self.mail})
         self.assertEqual(response.content, b"209")
 
 
@@ -337,8 +369,7 @@ class SaveFavoriteTestCase(TestCase):
         )
 
         self.user = User.objects.create_user(
-            username=self.username,
-            password=self.password
+            username=self.username, password=self.password
         )
 
     # - Test if the user is not logged in
@@ -352,12 +383,9 @@ class SaveFavoriteTestCase(TestCase):
         *Content = "500" (no save);
         *Favorite.objects.count() is still the same (0).
         """
-        
+
         favorites_old_count = Favorite.objects.count()
-        request = self.client.get(
-            reverse("account:save"),
-            {"product": self.product.id}
-            )
+        request = self.client.get(reverse("account:save"), {"product": self.product.id})
         self.assertEqual(request.content, b"500")
         self.assertEqual(favorites_old_count, Favorite.objects.count())
 
@@ -374,13 +402,10 @@ class SaveFavoriteTestCase(TestCase):
         *Status code = 404 (no Product found);
         *Favorite.objects.count() is still the same (0).
         """
-        
+
         self.client.login(username=self.username, password=self.password)
         favorites_old_count = Favorite.objects.count()
-        request = self.client.get(
-            reverse("account:save"),
-            {"product": 123456789}
-            )
+        request = self.client.get(reverse("account:save"), {"product": 123456789})
         self.assertEqual(request.status_code, 404)
         favorites_new_count = Favorite.objects.count()
         self.assertEqual(favorites_new_count, favorites_old_count)
@@ -397,13 +422,10 @@ class SaveFavoriteTestCase(TestCase):
         *Content = "209" (Favorite saved);
         * Favorite.objects.count() += 1.
         """
-        
+
         self.client.login(username=self.username, password=self.password)
         favorites_old_count = Favorite.objects.count()
-        request = self.client.get(
-            reverse("account:save"),
-            {"product": self.product.id}
-            )
+        request = self.client.get(reverse("account:save"), {"product": self.product.id})
         self.assertEqual(request.content, b"209")
         favorites_new_count = Favorite.objects.count()
         self.assertEqual(favorites_new_count, favorites_old_count + 1)
@@ -469,7 +491,7 @@ class DeleteFavoriteTestCase(TestCase):
         *Content = "500" (favorite not deleted);
         *Favorite.objects.count() is still the same (1).
         """
-        
+
         favorites_old_count = Favorite.objects.count()
         request = self.client.get(
             reverse("account:delete"), {"product": self.product.id}
@@ -506,13 +528,14 @@ class DeleteFavoriteTestCase(TestCase):
         *Content = "209" (Favorite deleted);
         *Favorite.objects.count() -= 1.
         """
-        
+
         self.client.login(username=self.username, password=self.password)
         request = self.client.get(
             reverse("account:delete"), {"product": self.product.id}
         )
         self.assertEqual(request.content, b"209")
         self.assertEqual(Favorite.objects.count(), 0)
+
 
 class MyFavoritePageTestCase(TestCase):
     """
@@ -559,6 +582,7 @@ class MyFavoritePageTestCase(TestCase):
         self.favorite = Favorite.objects.get_or_create(
             user=self.user, product=self.product
         )
+
     def test_favorite_not_logged_in(self):
         """
         Conditions:
@@ -568,10 +592,8 @@ class MyFavoritePageTestCase(TestCase):
         -----------
         """
 
-        request = self.client.get(
-            reverse("account:my_favorites")
-        )
-        self.assertEqual(request.content, b'500')
+        request = self.client.get(reverse("account:my_favorites"))
+        self.assertEqual(request.content, b"500")
 
     def test_favorite_logged_in(self):
         """
@@ -583,10 +605,9 @@ class MyFavoritePageTestCase(TestCase):
         """
 
         self.client.login(username=self.username, password=self.password)
-        request = self.client.get(
-            reverse("account:my_favorites")
-        )
+        request = self.client.get(reverse("account:my_favorites"))
         self.assertEqual(request.status_code, 200)
+
 
 # - Selenium tests
 class SeleniumTests(TestCase):
@@ -608,9 +629,7 @@ class SeleniumTests(TestCase):
         Tests setup.
         """
 
-        self.driver = webdriver.Firefox(
-            executable_path=GeckoDriverManager().install()
-            )
+        self.driver = webdriver.Firefox(executable_path=GeckoDriverManager().install())
 
     def test_connection_website(self):
         """
