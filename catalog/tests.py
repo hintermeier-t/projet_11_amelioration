@@ -2,11 +2,11 @@
 Testing module for the 'catalog' app only. Each test sequence is contained
 within a class. Each test of the sequence is a class method.
 """
-
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Product, Category
+from .models import Product, Category, Comment
 
 
 # - Index page
@@ -57,7 +57,13 @@ class DetailPageTestCase(TestCase):
         )
         self.product = Product.objects.get(name="Produit à manger")
 
+        self.user = User.objects.create_user(
+            username = "anre@manoukian.fr",
+            password = "Apatr1de"
+        )
+
     # - If item exists : returns 200
+    
     def test_detail_page_200(self):
         """
         Conditions:
@@ -70,7 +76,9 @@ class DetailPageTestCase(TestCase):
         """
 
         product_id = self.product.id
-        request = self.client.get(reverse("catalog:detail", args=(product_id,)))
+        request = self.client.get(reverse(
+            "catalog:detail", args=(product_id,))
+            )
         self.assertEqual(request.status_code, 200)
 
     # - If item does not exist : returns 404
@@ -86,9 +94,41 @@ class DetailPageTestCase(TestCase):
         """
         
         product_id = self.product.id + 1
-        request = self.client.get(reverse("catalog:detail", args=(product_id,)))
+        request = self.client.get(
+            reverse("catalog:detail", args=(product_id,))
+            )
         self.assertEqual(request.status_code, 404)
 
+    def test_comment_writing(self):
+        
+        old_count = Comment.objects.count()
+        self.assertEqual(old_count, 0)
+
+        self.client.login(username="anre@manoukian.fr",
+        password="Apatr1de")
+
+        request = self.client.post(
+            reverse("catalog:detail", args=(self.product.id,)),
+            {"commentaire": "J'aime"}
+        )
+        self.assertEqual(Comment.objects.count(), old_count+1)
+        comment = Comment.objects.get(id=1)
+        self.assertEqual(comment.validated, False)
+
+        request = self.client.get(
+            reverse("catalog:detail", args=(self.product.id,))
+            )
+        context = list(request.context["comments"])
+        self.assertEqual(context, [])
+
+        comment.validated = True
+        comment.save()
+        request = self.client.get(
+            reverse("catalog:detail", args=(self.product.id,))
+            )
+        context = request.context["comments"]
+        
+        self.assertEqual(request.context["comments"][0].content, "J'aime")
 
 # - Legal page
 class LegalPageTestCase(TestCase):

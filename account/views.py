@@ -25,6 +25,7 @@ def signin(request):
     Renders signin page if not logged in, with error if invalid.
 
     """
+    form = AuthenticationForm()
 
     if request.user.is_authenticated:
         return redirect("index")
@@ -33,11 +34,9 @@ def signin(request):
         email = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=email, password=password)
-        login(request, user)
-        return redirect("index")
-
-    else:
-        form = AuthenticationForm()
+        if user is not None:
+            login(request, user)
+            return redirect("index")
 
     return render(request, "account/signin.html", {"form": form})
 

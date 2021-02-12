@@ -40,24 +40,54 @@ def detail(request, product_id):
     """
     Product's detail view.
     """
+    form = CommentSubmitForm()
+    product = get_object_or_404(Product, pk=product_id)
+    categories = " ".join(
+        [category.name for category in product.categories.all()]
+        )
     if request.method == "POST":
         form = CommentSubmitForm(request.POST)
         if form.is_valid():
-            Comment.object.create(
-                user = request.user.id,
-                product = product_id,
-                content = request.POST.get('Commentaire'),
+            Comment.objects.create(
+                user = request.user,
+                product = get_object_or_404(Product, pk=product_id),
+                content = request.POST.get('commentaire'),
                 date = timezone.now()
             )
+            context = {
+            "product_name": product.name,
+            "nutriscore": product.nutriscore,
+            "description": product.description,
+            "brand": product.brand,
+            "thumbnail": product.picture,
+            "url": product.url,
+            "categories":categories,
+            "empty": True,
+            "comments": ["Aucun Commentaire"],
+            "form": form
+        } 
+
+        return render(request, "catalog/detail.html", context)
     else:
-        form = CommentSubmitForm()
-        product = get_object_or_404(Product, pk=product_id)
-        categories = " ".join(
-            [category.name for category in product.categories.all()]
-            )
+        
         comments = Comment.objects.filter(
-            product = product_id,
+            product = product,
             validated=True)
+        if comments is not None:
+            context = {
+                "product_name": product.name,
+                "nutriscore": product.nutriscore,
+                "description": product.description,
+                "brand": product.brand,
+                "thumbnail": product.picture,
+                "url": product.url,
+                "categories":categories,
+                "empty":False,
+                "comments": comments,
+                "form": form
+            }
+            return render(request, "catalog/detail.html", context)
+       
         context = {
             "product_name": product.name,
             "nutriscore": product.nutriscore,
@@ -66,11 +96,11 @@ def detail(request, product_id):
             "thumbnail": product.picture,
             "url": product.url,
             "categories":categories,
-            "comments": comments,
+            "comments": ["Aucun Commentaire"],
             "form": form
-        }
+        } 
 
-    return render(request, "catalog/detail.html", context)
+        return render(request, "catalog/detail.html", context)
 
 
 def legal(request):

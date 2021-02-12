@@ -5,6 +5,7 @@ Testing 'Account' app views.py module
 # - Django modules
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.core import mail
 from django.db.utils import IntegrityError
 from django.db.transaction import TransactionManagementError
 from django.template import RequestContext
@@ -13,7 +14,6 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 
 from psycopg2.errors import UniqueViolation
-
 # - Selenium modules
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -50,7 +50,7 @@ class SigninPageTestCase(TestCase):
         Tests setup.
         """
 
-        self.username = "NinaS"
+        self.username = "nina@simone.fr"
         self.password = "Sinnerman"
         self.user = User.objects.create_user(
             username=self.username, password=self.password
@@ -73,7 +73,7 @@ class SigninPageTestCase(TestCase):
             {"username": self.username, "password": "LittleGirlBlues"},
         )
         self.assertEqual(request.status_code, 200)
-        self.assertEqual(request.context["Error"], "Invalid")
+
 
     # - Test a signin with valid credentials
     def test_signin_valid_credentials(self):
@@ -128,10 +128,11 @@ class SignupPageTestCase(TestCase):
 
         Assertions:
         -----------
-        *User 'AlexandreA' doesn't exist before account creation.
-        *User 'AlexandreA' does exist after account creation.
+        *Sign Up page reachable.
+        *User 'alexandre@astier.fr' doesn't exist before account creation.
+        *User 'alexandre@astier.fr' does exist after account creation.
         """
-
+        
         try:
             User.objects.get(username="alexandre@astier.fr")
         except User.DoesNotExist:
@@ -148,6 +149,38 @@ class SignupPageTestCase(TestCase):
         )
         user = User.objects.get(username="alexandre@astier.fr")
         self.assertIsNotNone(user)
+        
+
+    def test_activation_mail(self):
+        """
+        Conditions:
+        -----------
+        *Fields are filled (client-side verifications)
+        *User doesn't exist before account creation.
+
+        Assertions:
+        -----------
+        *No mail sent before accoutn creation.
+        *Account created but user not activated.
+        *Activation mail sent
+        *User activated after clicking link
+        """
+
+        self.assertEqual(len(mail.outbox), 0)
+        request = self.client.post(
+            reverse("account:signup"),
+            {
+                "email": "nobuo@uematsu.ff",
+                "password1": "T0Zanarkand",
+                "password2": "T0Zanarkand",
+            },
+        )
+
+        user = User.objects.get(username="nobuo@uematsu.ff")
+        self.assertIsNotNone(user)
+        self.assertEqual(user.is_active, False)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Lien d'activation Pur Beurre")
 
     def test_mail_uniqueness(self):
         """
@@ -460,7 +493,7 @@ class DeleteFavoriteTestCase(TestCase):
         Tests setup.
         """
 
-        self.username = "SarahV"
+        self.email = "sarah@vaughan.us"
         self.password = "LullabyOfBirdland"
         self.product = Product.objects.create(
             name="Produit à manger",
@@ -473,7 +506,7 @@ class DeleteFavoriteTestCase(TestCase):
         )
 
         self.user = User.objects.create_user(
-            username=self.username, password=self.password
+            username=self.email, password=self.password
         )
         self.favorite = Favorite.objects.get_or_create(
             user=self.user, product=self.product
@@ -512,7 +545,7 @@ class DeleteFavoriteTestCase(TestCase):
         *Status code = 404 (Favorite not Found);
         *Favorite.objects.count() is still the same (1).
         """
-        self.client.login(username=self.username, password=self.password)
+        self.client.login(username=self.email, password=self.password)
         request = self.client.get(reverse("account:delete"), {"product": 0})
         self.assertEqual(request.status_code, 404)
         self.assertEqual(Favorite.objects.count(), 1)
@@ -529,7 +562,7 @@ class DeleteFavoriteTestCase(TestCase):
         *Favorite.objects.count() -= 1.
         """
 
-        self.client.login(username=self.username, password=self.password)
+        self.client.login(username=self.email, password=self.password)
         request = self.client.get(
             reverse("account:delete"), {"product": self.product.id}
         )
@@ -647,17 +680,17 @@ class SeleniumTests(TestCase):
 
         driver = self.driver
         driver.get("http://127.0.0.1:8000/account/signup")
-        username = driver.find_element_by_name("username")
+        email = driver.find_element_by_name("email")
         password_one = driver.find_element_by_name("password1")
         password_two = driver.find_element_by_name("password2")
-        username.send_keys("ArtBlakey")
+        email.send_keys("ArtBlakey")
         password_one.send_keys("b2eZu45ipGRe6")
         password_two.send_keys("b2eZu45ipGRe6")
         password_two.send_keys(Keys.RETURN)
         # - If the form is valid, fields should be empty
         self.assertEqual(password_one.text, "")
         self.assertEqual(password_two.text, "")
-        self.assertEqual(username.text, "")
+        self.assertEqual(email.text, "")
 
     def tearDown(self):
         """
